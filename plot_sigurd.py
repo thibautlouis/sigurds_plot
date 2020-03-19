@@ -1,40 +1,55 @@
 # example usage
-# python plot_sigurd.py -vgr 250 -m 0 "leaflet/*/*.fits"
+# python plot_sigurd.py -vgr 250 -m 0 "plot/leaflet/*/*.fits"
 # v stands for verbosity
 # g for grid
 # r for range (here +/- 250 \mu K)
 # m is a mask making the value transparent in the output image
-# see pixell/enplot for more options 
+# see pixell/enplot for more options
+# don't forget to change html_utils_dir
 
 from pixell import  mpi, enplot
 import tile_utils_sigurd
 from pspy import so_map
 import os
 
-map_name = "cmb.fits"
-odir = "leaflet"
-if os.path.exists(odir):
-    os.system("rm -rf %s"%odir)
+
+html_utils_dir = "/Users/thibautlouis/Desktop/sigurd_plot/html_utils"
+map_name = "window_LAT_93.fits"
+
+plots_dir = "plot/leaflet"
+
+if os.path.exists(plots_dir):
+    os.system('rm -rf %s'%plots_dir)
 
 comm = mpi.COMM_WORLD
-tile_utils_sigurd.leaftile(map_name, odir, verbose=True, comm=comm, monolithic=True)
+tile_utils_sigurd.leaftile(map_name, plots_dir, verbose=True, comm=comm, monolithic=True)
 args = enplot.parse_args()
 
 for plot in enplot.plot_iterator(*args.ifiles, comm=mpi.COMM_WORLD, **args):
     enplot.write(plot.name, plot)
+    
+os.system('find %s -name "*.fits" -type f -delete'%plots_dir)
 
-filename = "test_plot.html"
+html_utils_files = ["leaflet.css", "L.Control.MousePosition.css", "leaflet-src.js",
+                    "L.Control.MousePosition.js", "Leaflet.Graticule.js", "leaflet-ellipse.js",
+                    "L.ColorizableLayer.js", "multitile2.js"]
+                    
+for file in html_utils_files:
+    os.system('cp %s/%s plot/%s'%(html_utils_dir, file, file))
+
+
+filename = "plot/plot.html"
 g = open(filename, mode='w')
 g.write('<html>\n')
 g.write('<head>\n')
-g.write('<link rel=stylesheet href=html_utils/leaflet.css>\n')
-g.write('<link rel=stylesheet href=html_utils/L.Control.MousePosition.css>\n')
-g.write('<script src=html_utils/leaflet-src.js></script>\n')
-g.write('<script src=html_utils/L.Control.MousePosition.js></script>\n')
-g.write('<script src=html_utils/Leaflet.Graticule.js></script>\n')
-g.write('<script src=html_utils/leaflet-ellipse.js></script>\n')
-g.write('<script src=html_utils/L.ColorizableLayer.js></script>\n')
-g.write('<script src=html_utils/multitile2.js></script>\n')
+g.write('<link rel=stylesheet href=leaflet.css>\n')
+g.write('<link rel=stylesheet href=L.Control.MousePosition.css>\n')
+g.write('<script src=leaflet-src.js></script>\n')
+g.write('<script src=L.Control.MousePosition.js></script>\n')
+g.write('<script src=Leaflet.Graticule.js></script>\n')
+g.write('<script src=leaflet-ellipse.js></script>\n')
+g.write('<script src=L.ColorizableLayer.js></script>\n')
+g.write('<script src=multitile2.js></script>\n')
 g.write('<style>\n')
 g.write('body {margin: 0px;} #map {height: 100%; cursor: default;}\n')
 g.write('.leaflet-control-attribution, .leaflet-control-mouseposition { font-size: 2.5vh ! important; }\n')
@@ -56,7 +71,4 @@ g.write('</script>\n')
 g.write('</body>\n')
 g.write('</html>\n')
 g.close()
-
-
-
 
