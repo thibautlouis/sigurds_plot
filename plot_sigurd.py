@@ -14,7 +14,7 @@ import os
 
 
 html_utils_dir = "/Users/thibautlouis/Desktop/sigurd_plot/html_utils"
-map_name = "window_LAT_93.fits"
+map_name = "cmb.fits"
 
 plots_dir = "plot/leaflet"
 
@@ -71,4 +71,3 @@ g.write('</script>\n')
 g.write('</body>\n')
 g.write('</html>\n')
 g.close()
-
