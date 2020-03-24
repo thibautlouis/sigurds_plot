@@ -139,16 +139,16 @@ def main():
                         help="input FITS file corresponding to CAR map",
                         type=str,
                         default=None)
-    # parser.add_argument(
-    #     "--car-bounding-box",
-    #     help=
-    #     "when converting an HEALPIX map into a CAR one, set the bounding box (ra0, dec0, ra1, dec1) all in degrees",
-    #     type=tuple,
-    #     default=(-180, 180, -75, 30))
-    # parser.add_argument(
-    #     "--car-resolution",
-    #     help="when converting an HEALPIX map into a CAR one, set the resolution in arcminutes",
-    #     default=0.5)
+    parser.add_argument(
+        "--car-bounding-box",
+        help=
+        "when converting an HEALPIX map into a CAR one, set the bounding box (ra0, dec0, ra1, dec1) all in degrees",
+        type=tuple,
+        default=(-180, 180, -75, 30))
+    parser.add_argument(
+        "--car-resolution",
+        help="when converting an HEALPIX map into a CAR one, set the resolution in arcminutes",
+        default=0.5)
     parser.add_argument("--mask-file",
                         help="set a mask file to apply to HEALPIX map before converting",
                         type=str,
