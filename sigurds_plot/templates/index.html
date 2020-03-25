@@ -15,6 +15,22 @@
       #map {height: 100%; cursor: default;}
       #map img, #map canvas {image-rendering: optimizeSpeed; image-rendering: pixelated;}
       .leaflet-control-attribution, .leaflet-control-mouseposition { font-size: 2.5vh ! important; }
+      img.dss { width: 600px; }
+      {% if use_webplot %}
+      #help {
+        display: none;
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        height: 100vh;
+        width: 100vw;
+        z-index: 1000;
+        background: white;
+      }
+      #help p, ul { margin: 2em; }
+      #help_button { position:fixed; width: 32px; height: 32px; top: 4px; right: 4px; z-index: 2000; }
+      h1, h2, h3 { text-align: center; }
+      {% endif %}
     </style>
   </head>
   <body>
