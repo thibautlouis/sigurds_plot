@@ -13,7 +13,7 @@ setup(name="sigurds_plot",
           "Operating System :: OS Independent",
           "Programming Language :: Python :: 3.7"
       ],
-      install_requires=["pspy"],
+      install_requires=["pspy", "jinja2"],
       entry_points={
           "console_scripts": ["make_sigurds_plot=sigurds_plot.make_sigurds_plot:main"],
       })

@@ -44,18 +44,19 @@ def make_sigurd_plots(car_map_file,
                       enplot_args=[],
                       output_dir="leaflet",
                       delete_fits=True,
-                      use_webplot=True):
+                      use_webplot=True,
+                      generate_html_skeleton=True):
     """ Generate PNG images with Sigurd's plot routines """
     if os.path.exists(output_dir):
         os.system("rm -rf %s" % output_dir)
 
     comm = mpi.COMM_WORLD
     from sigurds_plot import tile_utils_sigurd
-    tile_utils_sigurd.leaftile(car_map_file,
-                               output_dir,
-                               verbose="-v" in enplot_args,
-                               comm=comm if not mpi.disabled else None,
-                               monolithic=True)
+    # tile_utils_sigurd.leaftile(car_map_file,
+    #                            output_dir,
+    #                            verbose="-v" in enplot_args,
+    #                            comm=comm if not mpi.disabled else None,
+    #                            monolithic=True)
 
     # Check if path to fits file are already stored
     output_dir += "/*/*.fits"
@@ -65,61 +66,22 @@ def make_sigurd_plots(car_map_file,
     if use_webplot:
         from sigurds_plot import webplot
         args = webplot.parse_args(enplot_args)
-        webplot.plot(args)
+        # webplot.plot(args)
     else:
         args = enplot.parse_args(enplot_args)
         for plot in enplot.plot_iterator(*args.ifiles, comm=comm, **args):
             enplot.write(plot.name, plot)
 
-    if comm.rank == 0 and delete_fits:
-        [os.remove(fits) for fits in args.ifiles]
+    # if delete_fits and comm.rank == 0:
+    #     [os.remove(fits) for fits in args.ifiles]
 
-
-def write_html(filename="index.html", output_dir="leaflet"):
-    """ Write html page given output directory """
-    body_template = """
-    <html>
-    <head>
-    <link rel=stylesheet href=https://folk.uio.no/sigurdkn/leaflet/leaflet.css>
-    <link rel=stylesheet href=https://folk.uio.no/sigurdkn/leaflet/L.Control.MousePosition.css>
-    <link rel=stylesheet href=https://folk.uio.no/sigurdkn/leaflet/L.Control.ShowColormap.css>
-    <script src=https://folk.uio.no/sigurdkn/leaflet/leaflet-src.js></script>
-    <script src=https://folk.uio.no/sigurdkn/leaflet/L.Control.MousePosition.js></script>
-    <script src=https://folk.uio.no/sigurdkn/leaflet/L.Control.ShowColormap.js></script>
-    <script src=https://folk.uio.no/sigurdkn/leaflet/Leaflet.Graticule.js></script>
-    <script src=https://folk.uio.no/sigurdkn/leaflet/leaflet-ellipse.js></script>
-    <script src=https://folk.uio.no/sigurdkn/leaflet/L.ColorizableLayer.js></script>
-    <script src=https://folk.uio.no/sigurdkn/multitile2.js></script>
-    <style>
-    body {margin: 0px;}
-    #map {height: 100%; cursor: default;}
-    .leaflet-control-attribution, .leaflet-control-mouseposition { font-size: 2.5vh ! important; }
-      #map img, #map canvas {image-rendering: optimizeSpeed; image-rendering: pixelated;}
-    </style>
-    </head>
-    <body>
-    <div id=map></div>
-    <script src=sigurd.js></script>
-    </body>
-    </html>
-    """
-
-    with open(filename, mode="w") as outfile:
-        outfile.write(body_template)
-
-    js_template = """
-    var my_layers ={tag:"survey", vals:[{tag:"comp", vals:[deflayer("./@leaflet@/{z}/tile_{y}_{x}.png")]}]};
-    var map = add_map("map");
-    add_layers(map, my_layers);
-    add_graticule(map);
-    var cache = {};
-    add_cache(map, cache);
-    document.addEventListener("keydown", function (e) {
-    if(e.keyCode == "Z".charCodeAt(0)) cache.data = {}; });
-    """
-
-    with open("sigurd.js", mode="w") as outfile:
-        outfile.write(js_template.replace("@leaflet@", output_dir))
+    if generate_html_skeleton and comm.rank == 0:
+        from jinja2 import Environment, PackageLoader
+        env = Environment(loader=PackageLoader("sigurds_plot", "templates"))
+        template = env.get_template("index.html")
+        Tr = 500 if "-r" not in enplot_args else enplot_args[enplot_args.index("-r") + 1]
+        with open("index.html", mode="w") as outfile:
+            outfile.write(template.render(output_dir=output_dir, Tr=Tr, use_webplot=use_webplot))
 
 
 def main():
@@ -188,9 +150,6 @@ def main():
                       output_dir=args.output_dir,
                       delete_fits=not args.keep_fits_files,
                       use_webplot=not args.use_enplot)
-
-    if comm.rank == 0:
-        write_html(output_dir=args.output_dir)
 
 
 # script:

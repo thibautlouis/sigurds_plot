@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <link rel=stylesheet href=https://folk.uio.no/sigurdkn/leaflet/leaflet.css>
+    <link rel=stylesheet href=https://folk.uio.no/sigurdkn/leaflet/L.Control.MousePosition.css>
+    <link rel=stylesheet href=https://folk.uio.no/sigurdkn/leaflet/L.Control.ShowColormap.css>
+    <script src=https://folk.uio.no/sigurdkn/leaflet/leaflet-src.js></script>
+    <script src=https://folk.uio.no/sigurdkn/leaflet/L.Control.MousePosition.js></script>
+    <script src=https://folk.uio.no/sigurdkn/leaflet/L.Control.ShowColormap.js></script>
+    <script src=https://folk.uio.no/sigurdkn/leaflet/Leaflet.Graticule.js></script>
+    <script src=https://folk.uio.no/sigurdkn/leaflet/leaflet-ellipse.js></script>
+    <script src=https://folk.uio.no/sigurdkn/leaflet/L.ColorizableLayer.js></script>
+    <script src=https://folk.uio.no/sigurdkn/multitile2.js></script>
+    <style>
+      body {margin: 0px;}
+      #map {height: 100%; cursor: default;}
+      #map img, #map canvas {image-rendering: optimizeSpeed; image-rendering: pixelated;}
+      .leaflet-control-attribution, .leaflet-control-mouseposition { font-size: 2.5vh ! important; }
+    </style>
+  </head>
+  <body>
+    {% if use_webplot %}
+    <div id=help>
+      <h1>Info</h1>
+      <ul>
+	<li>Press <b>g</b> to switch between Planck color and gray-scale.</li>
+	<li>Press <b>u/i</b> to increase/decrease the color scale in steps of 10%.</li>
+        <li>Press <b>q</b> to toggle the coordinate grid.</li>
+      </ul>
+    </div>
+    <img id=help_button src=https://folk.uio.no/sigurdkn/question_mark.svg onclick="toggle_help()">
+    {% endif %}
+    <div id=map></div>
+    <script>
+      {% if use_webplot %}
+      var colormaps = ["planck", "gray"];
+      var Tr = {{ Tr|default(500, true) }};
+      var my_layers = {
+      tag: "mymap",
+      vals: [
+      deflayer("{{ output_dir|default("leaflet", true) }}/{z}/tile_{y}_{x}.png", "{{ map_name }}", {type:"recolor", colormap:colormaps[0], min:-Tr, max:Tr})
+      ]};
+      {% else %}
+      var my_layers = {
+      tag: "mymap",
+      vals: [
+      deflayer("{{ output_dir|default("leaflet", true) }}/{z}/tile_{y}_{x}.png", "{{ map_name }}")
+      ]};
+      {% endif %}
+
+      var map = add_map("map");
+      {% if use_webplot %}
+      L.control.mapRange().addTo(map);
+      {% endif %}
+      add_layers(map, my_layers);
+      add_graticule(map);
+      add_step('graticule' ,['q','q']);
+      {% if use_webplot %}
+      add_scale('scale', ['u','i'], 1.1);
+      set_colormaps(colormaps, ['g']);
+      {% endif %}
+      var cache = {};
+      add_cache(map, cache);
+
+      var help_elem = document.getElementById("help");
+      function toggle_help() {
+        if(getComputedStyle(help_elem, null).display == "none")
+          help_elem.style.display = "block";
+        else
+          help_elem.style.display = "none";
+      }
+
+      {% if use_webplot %}
+      document.addEventListener("keydown", function (e) {
+        if (e.keyCode == "Z".charCodeAt(0)) {
+          console.log("Clean cache");
+          cache.data = {};
+        }
+      });
+      {% endif %}
+    </script>
+  </body>
+</html>
