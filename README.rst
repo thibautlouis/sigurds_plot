@@ -14,7 +14,7 @@ If you just want to use the code then you only have to do
 
    $ pip install git+https://github.com/thibautlouis/sigurds_plot.git
 
-If you plan to develop or even play with th content of the code, then you first need to clone this
+If you plan to develop or even play with the content of the code, then you first need to clone this
 repository to some location
 
 .. code:: shell
