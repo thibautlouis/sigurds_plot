@@ -38,7 +38,7 @@ and then produce the different images as well as the ``html`` code
 
    $ make_sigurds_plot --healpix-file your_healpix_map.fits -v -m 0
 
-The ``-v`` and ``-m 0`` are ``enplot/webplot`` options respectively meaning verbosity and making
+The ``-v`` and ``-m 0`` are ``enplot/webplot`` options meaning respectively verbosity and making
 zero value transparent. In this way, you can pass ``enplot/webplot`` options and tweak the final
 result as your convenience.
 
