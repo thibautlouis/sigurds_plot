@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 
 import numpy as np
@@ -45,49 +44,49 @@ def make_sigurd_plots(car_map_file,
                       output_dir="leaflet",
                       delete_fits=True,
                       use_webplot=True,
-                      generate_html_skeleton=True):
+                      generate_html_file=True):
     """ Generate PNG images with Sigurd's plot routines """
     if os.path.exists(output_dir):
         os.system("rm -rf %s" % output_dir)
 
     comm = mpi.COMM_WORLD
     from sigurds_plot import tile_utils_sigurd
-    # tile_utils_sigurd.leaftile(car_map_file,
-    #                            output_dir,
-    #                            verbose="-v" in enplot_args,
-    #                            comm=comm if not mpi.disabled else None,
-    #                            monolithic=True)
+    tile_utils_sigurd.leaftile(car_map_file,
+                               output_dir,
+                               verbose="-v" in enplot_args,
+                               comm=comm if not mpi.disabled else None,
+                               monolithic=True)
 
     # Check if path to fits file are already stored
-    output_dir += "/*/*.fits"
-    if output_dir not in enplot_args:
-        enplot_args.append(output_dir)
+    fits_files = os.path.join(output_dir, "*/*.fits")
+    if fits_files not in enplot_args:
+        enplot_args.append(fits_files)
 
     if use_webplot:
         from sigurds_plot import webplot
         args = webplot.parse_args(enplot_args)
-        # webplot.plot(args)
+        webplot.plot(args)
     else:
         args = enplot.parse_args(enplot_args)
         for plot in enplot.plot_iterator(*args.ifiles, comm=comm, **args):
             enplot.write(plot.name, plot)
 
-    # if delete_fits and comm.rank == 0:
-    #     [os.remove(fits) for fits in args.ifiles]
+    if delete_fits and comm.rank == 0:
+        [os.remove(fits) for fits in args.ifiles]
 
-    if generate_html_skeleton and comm.rank == 0:
+    if generate_html_file and comm.rank == 0:
         from jinja2 import Environment, PackageLoader
         env = Environment(loader=PackageLoader("sigurds_plot", "templates"))
         template = env.get_template("index.html")
-        Tr = 500 if "-r" not in enplot_args else enplot_args[enplot_args.index("-r") + 1]
-        with open("index.html", mode="w") as outfile:
-            outfile.write(template.render(output_dir=output_dir, Tr=Tr, use_webplot=use_webplot))
+        with open(os.path.join(os.path.dirname(output_dir), "index.html"), mode="w") as outfile:
+            outfile.write(template.render(output_dir=output_dir, use_webplot=use_webplot))
 
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(
-        description="A python program to produce Sigurd's plots and corresponding html pages")
+        description="A python program to produce Sigurd's plots and corresponding html pages",
+        epilog="Additional options will be passed to enplot/webplot program")
     parser.add_argument("--healpix-file",
                         help="input FITS file corresponding to HEALPIX map",
                         type=str,
@@ -127,6 +126,10 @@ def main():
                         help="keep intermediate FITS files",
                         action="store_true",
                         default=False)
+    parser.add_argument("--no-html-file",
+                        help="do not generate html file",
+                        action="store_true",
+                        default=False)
     args, enplot_args = parser.parse_known_args()
 
     car_map_file = args.car_file
@@ -149,7 +152,8 @@ def main():
                       enplot_args,
                       output_dir=args.output_dir,
                       delete_fits=not args.keep_fits_files,
-                      use_webplot=not args.use_enplot)
+                      use_webplot=not args.use_enplot,
+                      generate_html_file=not args.no_html_file)
 
 
 # script:
