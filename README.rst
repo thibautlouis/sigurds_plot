@@ -51,3 +51,17 @@ You can also mask part of the ``HEALPIX`` map by giving a mask file
 The process will result in the creation of a ``leaflet`` directory holding the different images at
 different scales and, an ``index.html`` file holding the javascript code. You will have to push this
 file with the ``leaflet`` directory on some server to get the final rendering.
+
+When converting an ``HEALPIX`` map, the ``CAR`` fits file is temporarly stored and thus deleted at
+the end of the process. You can keep it by adding the ``--car-file`` option in order to save it
+permanently
+
+.. code:: shell
+
+   $ make_sigurds_plot --healpix-file your_healpix_map.fits -v -m 0 --car-file your_car_map.fits
+
+Later, you can also use this option to directly pass the ``CAR`` file
+
+.. code:: shell
+
+   $ make_sigurds_plot -v -m 0 --car-file your_car_map.fits

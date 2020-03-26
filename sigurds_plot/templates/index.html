@@ -38,6 +38,9 @@
     <div id=help>
       <h1>Info</h1>
       <ul>
+        {% if fields|length > 1 %}
+	<li>Press <b>f/r</b> to switch between map components (T, Q, U).</li>
+        {% endif %}
 	<li>Press <b>g</b> to switch between Planck color and gray-scale.</li>
 	<li>Press <b>u/i</b> to increase/decrease the color scale in steps of 10%.</li>
         <li>Press <b>q</b> to toggle the coordinate grid.</li>
@@ -47,21 +50,34 @@
     {% endif %}
     <div id=map></div>
     <script>
+      var components = {0: "temperature", 1: "Q polarization", 2: "U polarization"}
       {% if use_webplot %}
       var colormaps = ["planck", "gray"];
-      var Tr = {{ Tr|default(500, true) }};
-      var my_layers = {
-      tag: "mymap",
-      vals: [
-      deflayer("{{ output_dir|default("leaflet", true) }}/{z}/tile_{y}_{x}.png", "{{ map_name }}", {type:"recolor", colormap:colormaps[0], min:-Tr, max:Tr})
-      ]};
-      {% else %}
-      var my_layers = {
-      tag: "mymap",
-      vals: [
-      deflayer("{{ output_dir|default("leaflet", true) }}/{z}/tile_{y}_{x}.png", "{{ map_name }}")
-      ]};
+      var r = {0: 500, 1: 50, 2: 50}
       {% endif %}
+      var my_layers = {
+      tag: "comp",
+      vals: [
+      {% if fields|length > 1 %}
+        {% for i in fields %}
+          deflayer("{{ output_dir|default("leaflet", true) }}/{z}/tile_{y}_{x}_{{ i }}.png",
+          components[{{ i }}]
+          {% if use_webplot %}
+            , {type:"recolor", colormap:colormaps[0], min:-r[{{ i }}], max:+r[{{ i }}]}),
+          {% else %}
+            ),
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        deflayer("{{ output_dir|default("leaflet", true) }}/{z}/tile_{y}_{x}.png",
+        components[{{ fields[0] }}]
+        {% if use_webplot %}
+        , {type:"recolor", colormap:colormaps[0], min:-r[{{ fields[0] }}], max:+r[{{ fields[0] }}]}),
+        {% else %}
+        ),
+        {% endif %}
+      {% endif %}
+      ]};
 
       var map = add_map("map");
       {% if use_webplot %}
@@ -69,7 +85,10 @@
       {% endif %}
       add_layers(map, my_layers);
       add_graticule(map);
-      add_step('graticule' ,['q','q']);
+      add_step('graticule', ['q','q']);
+      {% if fields|length > 1 %}
+      add_step('comp', ['f', 'r']);
+      {% endif %}
       {% if use_webplot %}
       add_scale('scale', ['u','i'], 1.1);
       set_colormaps(colormaps, ['g']);

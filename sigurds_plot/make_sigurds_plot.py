@@ -7,7 +7,7 @@ from pspy import so_map
 
 
 def healpix2car(healpix_map_file,
-                healpix_fields=(0, ),
+                healpix_fields=(0, 1, 2),
                 mask_file=None,
                 car_map_file=None,
                 car_resolution=0.5,
@@ -24,11 +24,12 @@ def healpix2car(healpix_map_file,
     projected_map = so_map.healpix2car(healpix_map, car_template, lmax=lmax)
 
     if mask_file is not None:
-        if projected_map.ncomp > 1:
-            raise ValueError("Number of components of map is too big wrt to mask")
         mask = so_map.read_map(mask_file)
+        if projected_map.ncomp != mask.ncomp:
+            raise ValueError("Map and mask have different number of components")
         projected_mask = so_map.healpix2car(mask, car_template, lmax=lmax)
-        projected_map.data *= np.where(projected_mask.data < 0.5, 0, 1)
+        for i in range(mask.nomp):
+            projected_map.data[i] *= np.where(projected_mask.data[i] < 0.5, 0, 1)
 
     if car_map_file is None:
         import tempfile
@@ -44,7 +45,8 @@ def make_sigurd_plots(car_map_file,
                       output_dir="leaflet",
                       delete_fits=True,
                       use_webplot=True,
-                      generate_html_file=True):
+                      generate_html_file=True,
+                      fields=(0, 1, 2)):
     """ Generate PNG images with Sigurd's plot routines """
     if os.path.exists(output_dir):
         os.system("rm -rf %s" % output_dir)
@@ -79,7 +81,8 @@ def make_sigurd_plots(car_map_file,
         env = Environment(loader=PackageLoader("sigurds_plot", "templates"))
         template = env.get_template("index.html")
         with open(os.path.join(os.path.dirname(output_dir), "index.html"), mode="w") as outfile:
-            outfile.write(template.render(output_dir=output_dir, use_webplot=use_webplot))
+            outfile.write(
+                template.render(output_dir=output_dir, use_webplot=use_webplot, fields=fields))
 
 
 def main():
@@ -95,7 +98,7 @@ def main():
         "--healpix-fields",
         help="tuple that enables HEALPIX fields i.e. (0,) will only keep temperature field ",
         type=tuple,
-        default=(0, ))
+        default=(0, 1, 2))
     parser.add_argument("--car-file",
                         help="input FITS file corresponding to CAR map",
                         type=str,
@@ -153,7 +156,8 @@ def main():
                       output_dir=args.output_dir,
                       delete_fits=not args.keep_fits_files,
                       use_webplot=not args.use_enplot,
-                      generate_html_file=not args.no_html_file)
+                      generate_html_file=not args.no_html_file,
+                      fields=[int(i) for i in args.healpix_fields])
 
 
 # script:
