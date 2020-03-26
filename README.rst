@@ -52,6 +52,13 @@ The process will result in the creation of a ``leaflet`` directory holding the d
 different scales and, an ``index.html`` file holding the javascript code. You will have to push this
 file with the ``leaflet`` directory on some server to get the final rendering.
 
+You can also select which components you want to be rendered. For instance, if you only want to look
+for temperature field, you can select it
+
+.. code:: shell
+
+   $ make_sigurds_plot --healpix-file your_healpix_map.fits --healpix-fields 0
+
 When converting an ``HEALPIX`` map, the ``CAR`` fits file is temporarly stored and thus deleted at
 the end of the process. You can keep it by adding the ``--car-file`` option in order to save it
 permanently

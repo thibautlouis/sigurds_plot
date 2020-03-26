@@ -24,12 +24,15 @@ def healpix2car(healpix_map_file,
     projected_map = so_map.healpix2car(healpix_map, car_template, lmax=lmax)
 
     if mask_file is not None:
-        mask = so_map.read_map(mask_file)
+        mask = so_map.read_map(mask_file, fields_healpix=healpix_fields)
         if projected_map.ncomp != mask.ncomp:
             raise ValueError("Map and mask have different number of components")
         projected_mask = so_map.healpix2car(mask, car_template, lmax=lmax)
-        for i in range(mask.ncomp):
-            projected_map.data[i] *= np.where(projected_mask.data[i] < 0.5, 0, 1)
+        if mask.ncomp == 1:
+            projected_map.data *= np.where(projected_mask.data < 0.5, 0, 1)
+        else:
+            for i in range(mask.ncomp):
+                projected_map.data[i] *= np.where(projected_mask.data[i] < 0.5, 0, 1)
 
     if car_map_file is None:
         import tempfile
