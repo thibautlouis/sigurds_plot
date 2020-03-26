@@ -80,7 +80,7 @@ def make_sigurd_plots(car_map_file,
         from jinja2 import Environment, PackageLoader
         env = Environment(loader=PackageLoader("sigurds_plot", "templates"))
         template = env.get_template("index.html")
-        with open(os.path.join("index.html", mode="w") as outfile:
+        with open("index.html", mode="w") as outfile:
             outfile.write(
                 template.render(output_dir=output_dir, use_webplot=use_webplot, fields=fields))
 
