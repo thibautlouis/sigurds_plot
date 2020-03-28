@@ -42,15 +42,15 @@ The ``-v`` and ``-m 0`` are ``enplot/webplot`` options meaning respectively verb
 zero value transparent. In this way, you can pass ``enplot/webplot`` options and tweak the final
 result as your convenience.
 
+The process will result in the creation of a ``leaflet`` directory holding the different images at
+different scales and, an ``index.html`` file holding the javascript code. You will have to push this
+file with the ``leaflet`` directory on some server to get the final rendering.
+
 You can also mask part of the ``HEALPIX`` map by giving a mask file
 
 .. code:: shell
 
    $ make_sigurds_plot --healpix-file your_healpix_map.fits --mask-file your_mask_map.fits
-
-The process will result in the creation of a ``leaflet`` directory holding the different images at
-different scales and, an ``index.html`` file holding the javascript code. You will have to push this
-file with the ``leaflet`` directory on some server to get the final rendering.
 
 You can also select which components you want to be rendered. For instance, if you only want to look
 for temperature field, you can select it
