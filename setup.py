@@ -16,5 +16,7 @@ setup(name="sigurds_plot",
       install_requires=["pspy", "jinja2"],
       package_data={"sigurds_plot": ["templates/*.html"]},
       entry_points={
-          "console_scripts": ["make_sigurds_plot=sigurds_plot.make_sigurds_plot:main"],
+          "console_scripts": [
+              "make_sigurds_plot=sigurds_plot.make_sigurds_plot:main",
+              "healpix2car=sigurds_plot.healpix2car:main"],
       })
