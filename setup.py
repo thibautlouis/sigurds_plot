@@ -17,6 +17,6 @@ setup(name="sigurds_plot",
       package_data={"sigurds_plot": ["templates/*.html"]},
       entry_points={
           "console_scripts": [
-              "make_sigurds_plot=sigurds_plot.make_sigurds_plot:main",
+              "car2tiles=sigurds_plot.car2tiles:main",
               "healpix2car=sigurds_plot.healpix2car:main"],
       })
