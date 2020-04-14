@@ -2,14 +2,14 @@ import os
 
 import numpy as np
 
-from pixell import enplot, mpi
+from pixell import enplot, mpi, wcsutils
 from pspy import so_map
 
 
 def car2tiles(input_file,
               mask_file=None,
               enplot_args=[],
-              output_dir="leaflet",
+              output_dir=None,
               delete_fits=True,
               use_webplot=True,
               generate_html=False):
@@ -38,12 +38,18 @@ def car2tiles(input_file,
         if fits_files not in enplot_args:
             enplot_args.append(fits_files)
 
+        if output_dir is None:
+            output_dir = os.path.join("leaflet", input_file)
+
         if os.path.exists(output_dir):
             os.system("rm -rf %s" % output_dir)
 
         if mask_file is not None:
             car = so_map.read_map(input_file)
             mask = so_map.read_map(mask_file)
+
+            if not wcsutils.is_compatible(mask.geometry[0], car.geometry[0]):
+                raise ValueError("Map and mask must have compatible geometries")
 
             if mask.ncomp == car.ncomp == 1:
                 car.data *= np.where(mask.data < 0.5, 0, 1)

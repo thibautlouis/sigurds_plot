@@ -30,45 +30,44 @@ Then you can install the code and its dependencies *via*
 Running the code
 ----------------
 
-After a succesful installation, you will get a ``make_sigurds_plot`` executable available. You can
-give it an ``HEALPIX`` fits file and the program will first convert it into ``CAR`` pixelisation map
-and then produce the different images as well as the ``html`` code
+After a succesful installation, you will get two binaries
+
+1) ``healpix2car`` allows you to transform an HEALPIX map into a CAR map. You can choose the final CAR
+   resolution as well as the bounding box on which to project the HEALPIX map
+
+2) ``car2tiles`` convert a CAR map into the different static PNG tile files. These tile files are used
+   by system such as https://leafletjs.com/
+
+Example flow
+------------
+
+Imagine you have a full sky map in HEALPIX pixelisation. First we will convert it into a CAR map
 
 .. code:: shell
 
-   $ make_sigurds_plot --healpix-file your_healpix_map.fits -v -m 0
+   $ healpix2car -i my_healpix_map.fits -o my_car_map.fits
 
-The ``-v`` and ``-m 0`` are ``enplot/webplot`` options meaning respectively verbosity and making
-zero value transparent. In this way, you can pass ``enplot/webplot`` options and tweak the final
-result as your convenience.
+The nominal angular resolution of the CAR map is 0.5 arcminutes and the bounding box is (-180, 180,
+-75, 30) degrees in right ascension and delination. The time to process the HEALPIX map really
+depends on how much memory you have on your machine. For instance, generating a full sky map at 0.5
+arcminutes with I, Q, U components produce a 13 Gb file !
 
-The process will result in the creation of a ``leaflet`` directory holding the different images at
-different scales and, an ``index.html`` file holding the javascript code. You will have to push this
-file with the ``leaflet`` directory on some server to get the final rendering.
-
-You can also mask part of the ``HEALPIX`` map by giving a mask file
+If you have enough memory and the previous conversion step was successful, you need to convert the
+CAR map into several PNG files corresponding different level of zoom and thus angular precision.
 
 .. code:: shell
 
-   $ make_sigurds_plot --healpix-file your_healpix_map.fits --mask-file your_mask_map.fits
+   $ car2tiles -i my_car_map.fits
 
-You can also select which components you want to be rendered. For instance, if you only want to look
-for temperature field, you can select it
+This will produce by default a ``leaflet/my_car_map.fits`` directory holding the different PNG
+files. You can choose a different output directory with the ``--output-dir`` option. You can also
+pass ``enplot/webplot`` options (see ``enplot`` `arguments
+<https://github.com/simonsobs/pixell/blob/master/pixell/enplot.py#L228>`_). By default the
+``webplot`` backend is used in order to change the colorization (color map and color range).
 
-.. code:: shell
-
-   $ make_sigurds_plot --healpix-file your_healpix_map.fits --healpix-fields 0
-
-When converting an ``HEALPIX`` map, the ``CAR`` fits file is temporarly stored and thus deleted at
-the end of the process. You can keep it by adding the ``--car-file`` option in order to save it
-permanently
+You can also give a mask file in order to mask region of the sky (geometries of both files must
+match)
 
 .. code:: shell
 
-   $ make_sigurds_plot --healpix-file your_healpix_map.fits -v -m 0 --car-file your_car_map.fits
-
-Later, you can also use this option to directly pass the ``CAR`` file
-
-.. code:: shell
-
-   $ make_sigurds_plot -v -m 0 --car-file your_car_map.fits
+   $ car2tiles -i my_car_map.fits --mask-file my_mask.fits
